@@ -55,22 +55,22 @@ def predict_salary(salary_from, salary_to):
 
 
 def predict_rub_salary_hh(vacancy):
-    vacancy_salary=[]
+    vacancy_salaries=[]
     for vacancy in fetch_all_vacancy(vacancy, 'hh', {'text': vacancy}):
         if vacancy['salary'] != None and vacancy['salary']['currency'] == 'RUR':
             salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])
         else:
             salary=None
-        vacancy_salary.append(salary)
-    return vacancy_salary
+        vacancy_salaries.append(salary)
+    return vacancy_salaries
 
 
 def predict_rub_salary_sj(vacancy):
-    vacancy_salary=[]
+    vacancy_salaries=[]
     for vacancy in fetch_all_vacancy(vacancy, 'sj', {'keyword': vacancy}):
         salary=predict_salary(vacancy['payment_from'],vacancy['payment_to'])
-        vacancy_salary.append(salary)
-    return vacancy_salary
+        vacancy_salaries.append(salary)
+    return vacancy_salaries
 
 
 def get_salary_statictic(platform):
