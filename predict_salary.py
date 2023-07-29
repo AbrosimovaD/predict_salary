@@ -83,13 +83,9 @@ def get_salary_statictic(platform):
     for lang in top10_langs_list:
         prediction_salary = function_to_calc(lang)
         not_none_prediction_salary = [x for x in prediction_salary if x is not None]
-        vacancy_statistic={}
-        vacancy_statistic['vacancies_found'] = len(prediction_salary)
-        vacancy_statistic['vacancies_processed'] = len(not_none_prediction_salary)
-        if len(not_none_prediction_salary)==0:
-          vacancy_statistic['average_salary'] = None
-        else:
-          vacancy_statistic['average_salary'] = int(s.mean(not_none_prediction_salary))
+        vacancy_statistic={'vacancies_found': len(prediction_salary),
+        'vacancies_processed': len(not_none_prediction_salary),
+        'average_salary': int(s.mean(not_none_prediction_salary)) if len(not_none_prediction_salary)!=0 else None}
         vacancies_salary_statictic[lang]=vacancy_statistic
     return vacancies_salary_statictic
 
