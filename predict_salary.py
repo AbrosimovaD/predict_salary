@@ -57,11 +57,8 @@ def predict_salary(salary_from, salary_to):
 def predict_rub_salary_hh(vacancy):
     vacancy_salary=[]
     for vacancy in fetch_all_vacancy(vacancy, 'hh', {'text': vacancy}):
-        if vacancy['salary'] != None:
-            if vacancy['salary']['currency'] == 'RUR':
-                salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])
-            else:
-                salary=None
+        if vacancy['salary'] != None and vacancy['salary']['currency'] == 'RUR':
+            salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])
         else:
             salary=None
         vacancy_salary.append(salary)
