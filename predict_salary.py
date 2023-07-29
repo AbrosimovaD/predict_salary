@@ -8,41 +8,53 @@ from terminaltables import AsciiTable
 from dotenv import load_dotenv
 
 
-
-def fetch_all_vacancy(vacancy, tech_params_for_platform, params_to_add=''):
+def fetch_all_vacancy_sj(vacancy, tech_params_for_platform, params_to_add=''):
     params, url, headers = tech_params_for_platform['params'],tech_params_for_platform['url'],tech_params_for_platform['headers']
     for page in count(0):
         page_params = {'page': page}
         params.update(**params_to_add,**page_params)
         page_response = requests.get(url, params=params, headers=headers)
-        if 'hh' in url and page_response.status_code == 400:
+        page_response.raise_for_status()
+        page_payload = page_response.json()
+        yield from page_payload['objects']
+        time.sleep(0.25)
+        if page_payload['objects'] == []:
+            break
+
+
+def fetch_all_vacancy_hh(vacancy, tech_params_for_platform, params_to_add=''):
+    params, url = tech_params_for_platform['params'],tech_params_for_platform['url']
+    for page in count(0):
+        page_params = {'page': page}
+        params.update(**params_to_add,**page_params)
+        page_response = requests.get(url, params=params)
+        if page_response.status_code == 400:
             break
         page_response.raise_for_status()
         page_payload = page_response.json()
-        key_for_vacancies_list=list(page_payload.keys())[0]
-        yield from page_payload[key_for_vacancies_list]
+        yield from page_payload['items']
         time.sleep(0.25)
-        if page_payload[key_for_vacancies_list] == []:
+        if page_payload['items'] == []:
             break
 
 
-def predict_salary(salary_from, salary_to):
-    if (salary_from == None and salary_to == None) or (salary_from == 0 and salary_to == 0):
-        salary = None
-    elif salary_from == None or int(salary_from) == 0:
-        salary=int(salary_to)*0.8
-    elif salary_to == None or int(salary_to) == 0:
-        salary=int(salary_from)*1.2
-    else:
+def predict_salary(salary_from, salary_to): 
+    if salary_from and salary_to:
         salary=(int(salary_from) + int(salary_to))/2
+    elif salary_from:
+        salary=int(salary_from)*1.2
+    elif salary_to:
+        salary=int(salary_to)*0.8
+    else:
+        salary = None
     return salary
 
 
 def predict_rub_salary_hh(vacancy,tech_params_for_platform):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy(vacancy,tech_params_for_platform, {'text': vacancy}):
-        if vacancy['salary'] != None and vacancy['salary']['currency'] == 'RUR':
-            salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])
+    for vacancy in fetch_all_vacancy_hh(vacancy,tech_params_for_platform, {'text': vacancy}):
+        if vacancy['salary'] and vacancy['salary']['currency'] == 'RUR':
+            salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])            
         else:
             salary=None
         vacancy_salaries.append(salary)
@@ -51,7 +63,7 @@ def predict_rub_salary_hh(vacancy,tech_params_for_platform):
 
 def predict_rub_salary_sj(vacancy,tech_params_for_platform):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy(vacancy, tech_params_for_platform, {'keyword': vacancy}):
+    for vacancy in fetch_all_vacancy_sj(vacancy, tech_params_for_platform, {'keyword': vacancy}):
         salary=predict_salary(vacancy['payment_from'],vacancy['payment_to'])
         vacancy_salaries.append(salary)
     return vacancy_salaries
