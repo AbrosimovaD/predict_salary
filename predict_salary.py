@@ -11,11 +11,9 @@ from dotenv import load_dotenv
 
 def fetch_all_vacancy(vacancy, tech_params_for_platform, params_to_add=''):
     params, url, headers = tech_params_for_platform['params'],tech_params_for_platform['url'],tech_params_for_platform['headers']
-    if params_to_add != '':
-        params.update(params_to_add)
     for page in count(0):
         page_params = {'page': page}
-        params.update(page_params)
+        params.update(**params_to_add,**page_params)
         page_response = requests.get(url, params=params, headers=headers)
         if 'hh' in url and page_response.status_code == 400:
             break
