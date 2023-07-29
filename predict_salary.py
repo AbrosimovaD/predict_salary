@@ -21,10 +21,10 @@ def fetch_all_vacancy(vacancy, tech_params_for_platform, params_to_add=''):
             break
         page_response.raise_for_status()
         page_payload = page_response.json()
-        first_key=list(page_payload.keys())[0]
-        yield from page_payload[first_key]
+        key_for_vacancies_list=list(page_payload.keys())[0]
+        yield from page_payload[key_for_vacancies_list]
         time.sleep(0.25)
-        if page_payload[first_key] == []:
+        if page_payload[key_for_vacancies_list] == []:
             break
 
 
