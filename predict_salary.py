@@ -8,22 +8,8 @@ from terminaltables import AsciiTable
 from dotenv import load_dotenv
 
 
-def get_tech_params_for_platform(platform):
-    load_dotenv()
-    sj_key = os.environ['SUBERJOB_KEY']
-    platforms={
-    'sj':{'url':'https://api.superjob.ru/2.0/vacancies',
-    'params':{'town':4, 'catalogues':48, 'period':30, 'currency':'rub'},
-    'headers':{'X-Api-App-Id': sj_key}},
-    'hh':{'url':'https://api.hh.ru/vacancies',
-    'params':{'area': 1, 'period': 30, 'per_page':100},
-    'headers': None}
-    }
-    return platforms[platform]
 
-
-def fetch_all_vacancy(vacancy, platform, params_to_add=''):
-    tech_params_for_platform = get_tech_params_for_platform(platform)
+def fetch_all_vacancy(vacancy, tech_params_for_platform, params_to_add=''):
     params, url, headers = tech_params_for_platform['params'],tech_params_for_platform['url'],tech_params_for_platform['headers']
     if params_to_add != '':
         params.update(params_to_add)
@@ -31,7 +17,7 @@ def fetch_all_vacancy(vacancy, platform, params_to_add=''):
         page_params = {'page': page}
         params.update(page_params)
         page_response = requests.get(url, params=params, headers=headers)
-        if platform == 'hh' and page_response.status_code == 400:
+        if 'hh' in url and page_response.status_code == 400:
             break
         page_response.raise_for_status()
         page_payload = page_response.json()
@@ -54,9 +40,9 @@ def predict_salary(salary_from, salary_to):
     return salary
 
 
-def predict_rub_salary_hh(vacancy):
+def predict_rub_salary_hh(vacancy,tech_params_for_platform):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy(vacancy, 'hh', {'text': vacancy}):
+    for vacancy in fetch_all_vacancy(vacancy,tech_params_for_platform, {'text': vacancy}):
         if vacancy['salary'] != None and vacancy['salary']['currency'] == 'RUR':
             salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])
         else:
@@ -65,20 +51,20 @@ def predict_rub_salary_hh(vacancy):
     return vacancy_salaries
 
 
-def predict_rub_salary_sj(vacancy):
+def predict_rub_salary_sj(vacancy,tech_params_for_platform):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy(vacancy, 'sj', {'keyword': vacancy}):
+    for vacancy in fetch_all_vacancy(vacancy, tech_params_for_platform, {'keyword': vacancy}):
         salary=predict_salary(vacancy['payment_from'],vacancy['payment_to'])
         vacancy_salaries.append(salary)
     return vacancy_salaries
 
 
-def get_salary_statictic(platform):
+def get_salary_statictic(platform,tech_params_for_platform):
     top10_langs_list=['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
     vacancies_salary_statictic={}
     function_to_calc= globals()[f'predict_rub_salary_{platform}']
     for lang in top10_langs_list:
-        prediction_salary = function_to_calc(lang)
+        prediction_salary = function_to_calc(lang,tech_params_for_platform)
         not_none_prediction_salary = [x for x in prediction_salary if x is not None]
         vacancy_statistic={'vacancies_found': len(prediction_salary),
         'vacancies_processed': len(not_none_prediction_salary),
@@ -87,12 +73,12 @@ def get_salary_statictic(platform):
     return vacancies_salary_statictic
 
 
-def get_salary_statictic_hh():
-    return get_salary_statictic('hh')
+def get_salary_statictic_hh(tech_params_for_platform):
+    return get_salary_statictic('hh',tech_params_for_platform)
 
 
-def get_salary_statictic_sj():
-    return get_salary_statictic('sj')
+def get_salary_statictic_sj(tech_params_for_platform):
+    return get_salary_statictic('sj',tech_params_for_platform)
 
 
 def print_statistic_in_table(data_for_print,title):
@@ -105,10 +91,25 @@ def print_statistic_in_table(data_for_print,title):
 
 
 def main():
-    sj_statistic=get_salary_statictic_sj()
-    hh_statistic=get_salary_statictic_hh()
-    print_statistic_in_table(hh_data, 'HeadHunter Moscow')
-    print_statistic_in_table(sj_data,'SuperJob Moscow')
+    load_dotenv()
+    sj_key = os.environ['SUBERJOB_KEY']
+    days= 30
+    vacancies_per_page = 100
+    catalog_for_search=48
+    city_for_sj=4
+    city_for_hh=1
+    platforms={
+    'sj':{'url':'https://api.superjob.ru/2.0/vacancies',
+    'params':{'town':city_for_sj, 'catalogues':catalog_for_search, 'period':days, 'currency':'rub'},
+    'headers':{'X-Api-App-Id': sj_key}},
+    'hh':{'url':'https://api.hh.ru/vacancies',
+    'params':{'area': city_for_hh, 'period': days, 'per_page':vacancies_per_page},
+    'headers': None}
+    }
+    sj_statistic=get_salary_statictic_sj(platforms['sj'])
+    hh_statistic=get_salary_statictic_hh(platforms['hh'])
+    print_statistic_in_table(hh_statistic, 'HeadHunter Moscow')
+    print_statistic_in_table(sj_statistic,'SuperJob Moscow')
 
 
 if __name__ == '__main__':
