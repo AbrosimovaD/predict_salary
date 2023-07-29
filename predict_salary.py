@@ -96,17 +96,17 @@ def get_salary_statictic_sj():
 
 
 def print_statistic_in_table(data_for_print,title):
-    table_data = [['Язык программирования' , 'Вакансий найдено' , 'Вакансий обработано' ,'Средняя зарплата' ]]
+    headers_for_table = [['Язык программирования' , 'Вакансий найдено' , 'Вакансий обработано' ,'Средняя зарплата' ]]
     for lang, salary_statistic in data_for_print.items():
         row_to_add=[lang, salary_statistic['vacancies_found'] , salary_statistic['vacancies_processed'], salary_statistic['average_salary']]
-        table_data.append(row_to_add)
-    table = AsciiTable(table_data,title)
+        headers_for_table.append(row_to_add)
+    table = AsciiTable(headers_for_table,title)
     print(table.table)
 
 
 def main():
-    sj_data=get_salary_statictic_sj()
-    hh_data=get_salary_statictic_hh()
+    sj_statistic=get_salary_statictic_sj()
+    hh_statistic=get_salary_statictic_hh()
     print_statistic_in_table(hh_data, 'HeadHunter Moscow')
     print_statistic_in_table(sj_data,'SuperJob Moscow')
 
