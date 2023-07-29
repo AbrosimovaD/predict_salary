@@ -73,14 +73,6 @@ def get_salary_statictic(platform,tech_params_for_platform):
     return vacancies_salary_statictic
 
 
-def get_salary_statictic_hh(tech_params_for_platform):
-    return get_salary_statictic('hh',tech_params_for_platform)
-
-
-def get_salary_statictic_sj(tech_params_for_platform):
-    return get_salary_statictic('sj',tech_params_for_platform)
-
-
 def print_statistic_in_table(data_for_print,title):
     headers_for_table = [['Язык программирования' , 'Вакансий найдено' , 'Вакансий обработано' ,'Средняя зарплата' ]]
     for lang, salary_statistic in data_for_print.items():
@@ -106,8 +98,8 @@ def main():
     'params':{'area': city_for_hh, 'period': days, 'per_page':vacancies_per_page},
     'headers': None}
     }
-    sj_statistic=get_salary_statictic_sj(platforms['sj'])
-    hh_statistic=get_salary_statictic_hh(platforms['hh'])
+    sj_statistic=get_salary_statictic('sj', platforms['sj'])
+    hh_statistic=get_salary_statictic('hh', platforms['hh'])
     print_statistic_in_table(hh_statistic, 'HeadHunter Moscow')
     print_statistic_in_table(sj_statistic,'SuperJob Moscow')
 
