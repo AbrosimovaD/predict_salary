@@ -75,10 +75,10 @@ def get_salary_statictic(platform,params, url, headers=''):
             prediction_salary = predict_rub_salary_hh(lang, params, url)
         else:
             prediction_salary = predict_rub_salary_sj(lang, params, url, headers)
-        not_none_prediction_salary = [x for x in prediction_salary if x is not None]
+        not_none_prediction_salary = [x for x in prediction_salary if x]
         vacancy_statistic={'vacancies_found': len(prediction_salary),
         'vacancies_processed': len(not_none_prediction_salary),
-        'average_salary': int(s.mean(not_none_prediction_salary)) if len(not_none_prediction_salary)!=0 else None}
+        'average_salary': int(s.mean(not_none_prediction_salary)) if len(not_none_prediction_salary) else None}
         vacancies_salary_statictic[lang]=vacancy_statistic
     return vacancies_salary_statictic
 
