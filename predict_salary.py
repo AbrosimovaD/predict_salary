@@ -8,8 +8,7 @@ from terminaltables import AsciiTable
 from dotenv import load_dotenv
 
 
-def fetch_all_vacancy_sj(vacancy, tech_params_for_platform, params_to_add=''):
-    params, url, headers = tech_params_for_platform['params'],tech_params_for_platform['url'],tech_params_for_platform['headers']
+def fetch_all_vacancy_sj(vacancy, params, url, headers, params_to_add=''):
     for page in count(0):
         page_params = {'page': page}
         params.update(**params_to_add,**page_params)
@@ -22,8 +21,7 @@ def fetch_all_vacancy_sj(vacancy, tech_params_for_platform, params_to_add=''):
             break
 
 
-def fetch_all_vacancy_hh(vacancy, tech_params_for_platform, params_to_add=''):
-    params, url = tech_params_for_platform['params'],tech_params_for_platform['url']
+def fetch_all_vacancy_hh(vacancy, params, url, params_to_add=''):
     for page in count(0):
         page_params = {'page': page}
         params.update(**params_to_add,**page_params)
@@ -50,9 +48,9 @@ def predict_salary(salary_from, salary_to):
     return salary
 
 
-def predict_rub_salary_hh(vacancy,tech_params_for_platform):
+def predict_rub_salary_hh(vacancy,params, url):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy_hh(vacancy,tech_params_for_platform, {'text': vacancy}):
+    for vacancy in fetch_all_vacancy_hh(vacancy,params, url, {'text': vacancy}):
         if vacancy['salary'] and vacancy['salary']['currency'] == 'RUR':
             salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])            
         else:
@@ -61,19 +59,19 @@ def predict_rub_salary_hh(vacancy,tech_params_for_platform):
     return vacancy_salaries
 
 
-def predict_rub_salary_sj(vacancy,tech_params_for_platform):
+def predict_rub_salary_sj(vacancy,params, url, headers):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy_sj(vacancy, tech_params_for_platform, {'keyword': vacancy}):
+    for vacancy in fetch_all_vacancy_sj(vacancy, params, url, headers, {'keyword': vacancy}):
         salary=predict_salary(vacancy['payment_from'],vacancy['payment_to'])
         vacancy_salaries.append(salary)
     return vacancy_salaries
 
 
-def get_salary_statictic(platform,tech_params_for_platform):
+def get_salary_statictic(platform,params, url, headers=''):
     top_langs=['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
     vacancies_salary_statictic={}
     for lang in top_langs:
-        prediction_salary = predict_rub_salary_hh(lang,tech_params_for_platform) if platform == 'hh' else predict_rub_salary_sj(lang,tech_params_for_platform)
+        prediction_salary = predict_rub_salary_hh(lang, params, url) if platform == 'hh' else predict_rub_salary_sj(lang, params, url, headers)
         not_none_prediction_salary = [x for x in prediction_salary if x is not None]
         vacancy_statistic={'vacancies_found': len(prediction_salary),
         'vacancies_processed': len(not_none_prediction_salary),
@@ -99,16 +97,13 @@ def main():
     catalog_for_search=48
     city_for_sj=4
     city_for_hh=1
-    platforms={
-    'sj':{'url':'https://api.superjob.ru/2.0/vacancies',
-    'params':{'town':city_for_sj, 'catalogues':catalog_for_search, 'period':days, 'currency':'rub'},
-    'headers':{'X-Api-App-Id': sj_key}},
-    'hh':{'url':'https://api.hh.ru/vacancies',
-    'params':{'area': city_for_hh, 'period': days, 'per_page':vacancies_per_page},
-    'headers': None}
-    }
-    sj_statistic=get_salary_statictic('sj', platforms['sj'])
-    hh_statistic=get_salary_statictic('hh', platforms['hh'])
+    sj_url = 'https://api.superjob.ru/2.0/vacancies'
+    sj_params = {'town':city_for_sj, 'catalogues':catalog_for_search, 'period':days, 'currency':'rub'}
+    sj_headers = {'X-Api-App-Id': sj_key}
+    hh_url = 'https://api.hh.ru/vacancies'
+    hh_params = {'area': city_for_hh, 'period': days, 'per_page':vacancies_per_page}
+    sj_statistic=get_salary_statictic('sj', sj_params, sj_url, sj_headers)
+    hh_statistic=get_salary_statictic('hh', hh_params, hh_url)
     print_statistic_in_table(hh_statistic, 'HeadHunter Moscow')
     print_statistic_in_table(sj_statistic,'SuperJob Moscow')
 
