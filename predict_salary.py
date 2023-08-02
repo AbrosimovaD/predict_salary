@@ -80,7 +80,7 @@ def get_salary_statictic(platform,params, url, headers=''):
     return vacancies_salary_statictic
 
 
-def print_statistic_in_table(data_for_print,title):
+def print_statistic_in_table(vacancies_statistic,title):
     headers_for_table = [['Язык программирования' , 'Вакансий найдено' , 'Вакансий обработано' ,'Средняя зарплата' ]]
     for lang, salary_statistic in data_for_print.items():
         row_to_add=[lang, salary_statistic['vacancies_found'] , salary_statistic['vacancies_processed'], salary_statistic['average_salary']]
