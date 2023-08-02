@@ -70,9 +70,9 @@ def predict_rub_salary_sj(vacancy,tech_params_for_platform):
 
 
 def get_salary_statictic(platform,tech_params_for_platform):
-    top10_langs_list=['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
+    top_langs=['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
     vacancies_salary_statictic={}
-    for lang in top10_langs_list:
+    for lang in top_langs:
         prediction_salary = predict_rub_salary_hh(lang,tech_params_for_platform) if platform == 'hh' else predict_rub_salary_sj(lang,tech_params_for_platform)
         not_none_prediction_salary = [x for x in prediction_salary if x is not None]
         vacancy_statistic={'vacancies_found': len(prediction_salary),
