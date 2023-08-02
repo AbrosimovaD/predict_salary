@@ -17,7 +17,7 @@ def fetch_all_vacancy_sj(vacancy, params, url, headers):
         page_payload = page_response.json()
         yield from page_payload['objects']
         time.sleep(0.25)
-        if page_payload['objects'] == []:
+        if not page_payload['objects']:
             break
 
 
@@ -32,7 +32,7 @@ def fetch_all_vacancy_hh(vacancy, params, url):
         page_payload = page_response.json()
         yield from page_payload['items']
         time.sleep(0.25)
-        if page_payload['items'] == []:
+        if not page_payload['items']:
             break
 
 
