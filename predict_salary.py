@@ -71,7 +71,10 @@ def get_salary_statictic(platform,params, url, headers=''):
     top_langs=['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
     vacancies_salary_statictic={}
     for lang in top_langs:
-        prediction_salary = predict_rub_salary_hh(lang, params, url) if platform == 'hh' else predict_rub_salary_sj(lang, params, url, headers)
+        if platform == 'hh':
+            prediction_salary = predict_rub_salary_hh(lang, params, url)
+        else:
+            prediction_salary = predict_rub_salary_sj(lang, params, url, headers)
         not_none_prediction_salary = [x for x in prediction_salary if x is not None]
         vacancy_statistic={'vacancies_found': len(prediction_salary),
         'vacancies_processed': len(not_none_prediction_salary),
@@ -82,7 +85,7 @@ def get_salary_statictic(platform,params, url, headers=''):
 
 def print_statistic_in_table(vacancies_statistic,title):
     headers_for_table = [['Язык программирования' , 'Вакансий найдено' , 'Вакансий обработано' ,'Средняя зарплата' ]]
-    for lang, salary_statistic in data_for_print.items():
+    for lang, salary_statistic in vacancies_statistic.items():
         row_to_add=[lang, salary_statistic['vacancies_found'] , salary_statistic['vacancies_processed'], salary_statistic['average_salary']]
         headers_for_table.append(row_to_add)
     table = AsciiTable(headers_for_table,title)
