@@ -8,10 +8,10 @@ from terminaltables import AsciiTable
 from dotenv import load_dotenv
 
 
-def fetch_all_vacancy_sj(vacancy, params, url, headers, params_to_add=''):
+def fetch_all_vacancy_sj(vacancy, params, url, headers):
+    params['keyword'] = vacancy
     for page in count(0):
-        page_params = {'page': page}
-        params.update(**params_to_add,**page_params)
+        params['page'] =  page
         page_response = requests.get(url, params=params, headers=headers)
         page_response.raise_for_status()
         page_payload = page_response.json()
@@ -21,10 +21,10 @@ def fetch_all_vacancy_sj(vacancy, params, url, headers, params_to_add=''):
             break
 
 
-def fetch_all_vacancy_hh(vacancy, params, url, params_to_add=''):
+def fetch_all_vacancy_hh(vacancy, params, url):
+    params['text']=vacancy
     for page in count(0):
-        page_params = {'page': page}
-        params.update(**params_to_add,**page_params)
+        params['page'] =  page
         page_response = requests.get(url, params=params)
         if page_response.status_code == 400:
             break
@@ -50,7 +50,7 @@ def predict_salary(salary_from, salary_to):
 
 def predict_rub_salary_hh(vacancy,params, url):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy_hh(vacancy,params, url, {'text': vacancy}):
+    for vacancy in fetch_all_vacancy_hh(vacancy,params, url):
         if vacancy['salary'] and vacancy['salary']['currency'] == 'RUR':
             salary=predict_salary(vacancy['salary']['from'], vacancy['salary']['to'])            
         else:
@@ -61,7 +61,7 @@ def predict_rub_salary_hh(vacancy,params, url):
 
 def predict_rub_salary_sj(vacancy,params, url, headers):
     vacancy_salaries=[]
-    for vacancy in fetch_all_vacancy_sj(vacancy, params, url, headers, {'keyword': vacancy}):
+    for vacancy in fetch_all_vacancy_sj(vacancy, params, url, headers):
         salary=predict_salary(vacancy['payment_from'],vacancy['payment_to'])
         vacancy_salaries.append(salary)
     return vacancy_salaries
