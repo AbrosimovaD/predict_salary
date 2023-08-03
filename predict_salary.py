@@ -48,7 +48,7 @@ def predict_salary(salary_from, salary_to):
     return salary
 
 
-def predict_rub_salary_hh(vacancy, params, url):
+def predict_rub_salaries_hh(vacancy, params, url):
     vacancy_salaries = []
     for vacancy in fetch_all_vacancy_hh(vacancy, params, url):
         if vacancy['salary'] and vacancy['salary']['currency'] == 'RUR':
@@ -59,7 +59,7 @@ def predict_rub_salary_hh(vacancy, params, url):
     return vacancy_salaries
 
 
-def predict_rub_salary_sj(vacancy, params, url, headers):
+def predict_rub_salaries_sj(vacancy, params, url, headers):
     vacancy_salaries = []
     for vacancy in fetch_all_vacancy_sj(vacancy, params, url, headers):
         salary = predict_salary(vacancy['payment_from'], vacancy['payment_to'])
@@ -72,13 +72,13 @@ def get_salary_statictic(platform, params, url, headers=''):
     vacancies_salary_statictic = {}
     for lang in top_langs:
         if platform == 'hh':
-            prediction_salary = predict_rub_salary_hh(lang, params, url)
+            prediction_salaries = predict_rub_salaries_hh(lang, params, url)
         else:
-            prediction_salary = predict_rub_salary_sj(lang, params, url, headers)
-        not_none_prediction_salary = [x for x in prediction_salary if x]
-        vacancy_statistic = {'vacancies_found': len(prediction_salary),
-                             'vacancies_processed': len(not_none_prediction_salary),
-                             'average_salary': int(s.mean(not_none_prediction_salary)) if len(not_none_prediction_salary) else None}
+            prediction_salaries = predict_rub_salaries_sj(lang, params, url, headers)
+        not_none_prediction_salaries = [x for x in prediction_salaries if x]
+        vacancy_statistic = {'vacancies_found': len(prediction_salaries),
+                             'vacancies_processed': len(not_none_prediction_salaries),
+                             'average_salary': int(s.mean(not_none_prediction_salaries)) if len(not_none_prediction_salaries) else None}
         vacancies_salary_statictic[lang] = vacancy_statistic
     return vacancies_salary_statictic
 
