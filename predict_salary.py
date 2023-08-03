@@ -67,14 +67,24 @@ def predict_rub_salaries_sj(vacancy, params, url, headers):
     return vacancy_salaries
 
 
-def get_salary_statictic(platform, params, url, headers=''):
+def get_salary_statictic_hh(params, url):
     top_langs = ['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
     vacancies_salary_statictic = {}
     for lang in top_langs:
-        if platform == 'hh':
-            prediction_salaries = predict_rub_salaries_hh(lang, params, url)
-        else:
-            prediction_salaries = predict_rub_salaries_sj(lang, params, url, headers)
+        prediction_salaries = predict_rub_salaries_hh(lang, params, url)
+        not_none_prediction_salaries = [x for x in prediction_salaries if x]
+        vacancy_statistic = {'vacancies_found': len(prediction_salaries),
+                             'vacancies_processed': len(not_none_prediction_salaries),
+                             'average_salary': int(s.mean(not_none_prediction_salaries)) if len(not_none_prediction_salaries) else None}
+        vacancies_salary_statictic[lang] = vacancy_statistic
+    return vacancies_salary_statictic
+
+
+def get_salary_statictic_sj(params, url, headers):
+    top_langs = ['Shell', 'Go', 'C', 'C#', 'CSS', 'C++', 'PHP', 'Ruby', 'Python', 'Java', 'JavaScript']
+    vacancies_salary_statictic = {}
+    for lang in top_langs:
+        prediction_salaries = predict_rub_salaries_sj(lang, params, url, headers)
         not_none_prediction_salaries = [x for x in prediction_salaries if x]
         vacancy_statistic = {'vacancies_found': len(prediction_salaries),
                              'vacancies_processed': len(not_none_prediction_salaries),
@@ -105,8 +115,8 @@ def main():
     sj_headers = {'X-Api-App-Id': sj_key}
     hh_url = 'https://api.hh.ru/vacancies'
     hh_params = {'area': city_for_hh, 'period': days, 'per_page': vacancies_per_page}
-    sj_statistic = get_salary_statictic('sj', sj_params, sj_url, sj_headers)
-    hh_statistic = get_salary_statictic('hh', hh_params, hh_url)
+    sj_statistic = get_salary_statictic_sj(sj_params, sj_url, sj_headers)
+    hh_statistic = get_salary_statictic_hh(hh_params, hh_url)
     print_statistic_in_table(hh_statistic, 'HeadHunter Moscow')
     print_statistic_in_table(sj_statistic, 'SuperJob Moscow')
 
